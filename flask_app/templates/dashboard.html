@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.css">
+</head>
+<body>
+  <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+
+  {% with messages = get_flashed_messages() %}<!-- declare a variable called messages -->
+    {% if messages %}<!-- check if there are any messages -->
+      {% for message in messages %}<!-- loop through the messages -->
+        <p>{{message}}</p><!-- display each message in a paragraph tag -->
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+
+  <div class="d-flex justify-content-between">
+    <h1 style="margin: 0 1vw 0 1vw;">Hello {{session['user_username']}}! Welcome to your to-do list manager.</h1>
+    <div class="d-flex">
+      <a href="/tasks/new" class="align-self-center" style="margin: 0 1vw 0 1vw;">Add a new task</a>
+      <a href="/logout" class="align-self-center" style="margin: 0 1vw 0 1vw;">Log out</a>
+    </div>
+  </div>
+
+  <div style="margin: 5vh 0;">
+    <h2 style="margin: 1vh 1vw;"><u>Your Tasks</u></h2>
+    <h4 style="margin: 1vh 1vw;"><u>Uncompleted</u></h4>
+    <table class="table table-hover table-bordered" style="margin: 1vh 1vw;" id="your_uncompleted_tasks">
+      <thead>
+        <tr>
+          <th style="text-align: center;">Task</th>
+          <th style="text-align: center;">Due Date</th>
+          <th style="text-align: center;">Privacy</th>
+          <th style="text-align: center;">Actions</th>
+        </tr>
+      </thead>
+      {% for task in tasks %}
+        {% if task.completion_status == 0 and session['user_id'] == task.user.id %} 
+        {# Conditional view to display only the logged in user's uncompleted tasks #}
+        {# May also be written as: {% if session['user_id'] == task.user.id %} #}
+          <tr class="table-warning">
+            <td style="text-align: center;">{{task.task_name}}</td>
+            <td style="text-align: center;">{{task.due_date.strftime('%Y-%m-%d at %#I:%M%p')}}</td>
+            {% if task.privacy_status == 0 %}
+              <td style="text-align: center;">Private</td>
+            {% else %}
+              <td style="text-align: center;">Public</td>
+            {% endif %}
+
+            <td class="d-flex justify-content-around">
+              <a href="/tasks/{{task.id}}">View</a>
+              <a href="/tasks/{{task.id}}/edit">Edit</a>
+              <a href="/tasks/{{task.id}}/delete">Delete</a>
+              <form action="/tasks/{{task.id}}/update_completion_status" method="POST">
+                <input type="hidden" name="completion_status" value=1>
+                
+                <input type="hidden" name="task_name" value={{task.task_name}}>
+                <input type="hidden" name="description" value={{task.description}}>
+                <input type="hidden" name="due_date" value={{task.due_date}}>
+                <input type="hidden" name="privacy_status" value={{task.privacy_status}}>
+  
+                <button type="submit">Mark As Complete</button>
+              </form>
+            </td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
+    
+    <h4 style="margin: 1vh 1vw;"><u>Completed</u></h4>
+    <table class="table table-hover table-bordered" style="margin: 1vh 1vw;" id="your_completed_tasks">
+      <thead>
+        <tr>
+          <th style="text-align: center;">Task</th>
+          <th style="text-align: center;">Due Date</th>
+          <th style="text-align: center;">Completion Date</th>
+          <th style="text-align: center;">Privacy</th>
+          <th style="text-align: center;">Actions</th>
+        </tr>
+      </thead>
+      {% for task in tasks %}
+        {% if task.completion_status == 1 and session['user_id'] == task.user.id %} 
+          <tr class="table-success">
+            <td style="text-align: center;">{{task.task_name}}</td>
+            <td style="text-align: center;">{{task.due_date.strftime('%Y-%m-%d at %#I:%M%p')}}</td>
+            <td style="text-align: center;">{{task.completion_date.strftime('%Y-%m-%d at %#I:%M%p')}}</td>
+            {% if task.privacy_status == 0 %}
+              <td style="text-align: center;">Private</td>
+            {% else %}
+              <td style="text-align: center;">Public</td>
+            {% endif %}
+            <td class="d-flex justify-content-around">
+              <a href="/tasks/{{task.id}}">View</a>
+              <a href="/tasks/{{task.id}}/edit">Edit</a>
+              <a href="/tasks/{{task.id}}/delete">Delete</a>
+              <form action="/tasks/{{task.id}}/update_completion_status" method="POST">
+                <input type="hidden" name="completion_status" value=0>
+              
+                <input type="hidden" name="task_name" value={{task.task_name}}>
+                <input type="hidden" name="description" value={{task.description}}>
+                <input type="hidden" name="due_date" value={{task.due_date}}>
+                <input type="hidden" name="privacy_status" value={{task.privacy_status}}>
+              
+                <button type="submit">Mark As Incomplete</button>
+              </form>
+            </td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+  
+  <div style="margin: 10vh 0;">
+    <h2 style="margin: 1vh 1vw;"><u>Community Tasks</u></h2>
+    <h4 style="margin: 1vh 1vw;"><u>Uncompleted</u></h4>
+    <table class="table table-hover table-bordered" style="margin: 1vh 1vw;" id="community_uncompleted_tasks">
+      <thead>
+        <tr>
+          <th style="text-align: center;">Task</th>
+          <th style="text-align: center;">Due Date</th>
+          <th style="text-align: center;">Creator</th>
+          <th style="text-align: center;">Actions</th>
+        </tr>
+      </thead>
+      {% for task in tasks %}
+        {% if task.completion_status == 0 and task.privacy_status == 1 %}
+        <tr class="table-warning">
+          <td style="text-align: center;">{{task.task_name}}</td>
+          <td style="text-align: center;">{{task.due_date.strftime('%Y-%m-%d at %#I:%M%p')}}</td>
+          <td style="text-align: center;">{{task.user.username}}</td>
+  
+          <td class="d-flex justify-content-around">
+            <a href="/tasks/{{task.id}}">View</a>
+            {% if session['user_id'] == task.user.id %}
+              <a href="/tasks/{{task.id}}/edit">Edit</a>
+              <a href="/tasks/{{task.id}}/delete">Delete</a>
+            {% endif %}
+            <form action="/tasks/{{task.id}}/update_completion_status" method="POST">
+              <input type="hidden" name="completion_status" value=1>
+            
+              <input type="hidden" name="task_name" value={{task.task_name}}>
+              <input type="hidden" name="description" value={{task.description}}>
+              <input type="hidden" name="due_date" value={{task.due_date}}>
+              <input type="hidden" name="privacy_status" value={{task.privacy_status}}>
+            
+              <button type="submit">Mark As Complete</button>
+            </form>
+          </td>
+        </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
+  
+    <h4 style="margin: 1vh 1vw;"><u>Completed</u></h4>
+      <table class="table table-hover table-bordered" style="margin: 1vh 1vw;" id="community_completed_tasks">
+        <thead>
+          <tr>
+            <th style="text-align: center;">Task</th>
+            <th style="text-align: center;">Due Date</th>
+            <th style="text-align: center;">Creator</th>
+            <th style="text-align: center;">Completion Date</th>
+            <th style="text-align: center;">Actions</th>
+          </tr>
+        </thead>
+        {% for task in tasks %}
+          {% if task.completion_status == 1 and task.privacy_status == 1 %}
+          <tr class="table-success">
+            <td style="text-align: center;">{{task.task_name}}</td>
+            <td style="text-align: center;">{{task.due_date.strftime('%Y-%m-%d at %#I:%M%p')}}</td>
+            <td style="text-align: center;">{{task.user.username}}</td>
+            <td style="text-align: center;">{{task.completion_date.strftime('%Y-%m-%d at %#I:%M%p')}}</td>
+        
+            <td class="d-flex justify-content-around">
+              <a href="/tasks/{{task.id}}">View</a>
+              {% if session['user_id'] == task.user.id %}
+              <a href="/tasks/{{task.id}}/edit">Edit</a>
+              <a href="/tasks/{{task.id}}/delete">Delete</a>
+              {% endif %}
+              <form action="/tasks/{{task.id}}/update_completion_status" method="POST">
+  
+                <input type="hidden" name="completion_status" value=0>
+    
+                <input type="hidden" name="task_name" value={{task.task_name}}>
+                <input type="hidden" name="description" value={{task.description}}>
+                <input type="hidden" name="due_date" value={{task.due_date}}>
+                <input type="hidden" name="privacy_status" value={{task.privacy_status}}>
+    
+                <button type="submit">Mark As Incomplete</button>
+              </form>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </table>
+  </div>
+
+  {% block scripts %}
+    <script>
+      $(document).ready(function () {
+        $('#your_uncompleted_tasks').DataTable({
+          searching: true,
+          columns: [
+            { orderable: true, searchable: true },
+            { orderable: true, searchable: false },
+            { orderable: true, searchable: false },
+            { orderable: false, searchable: false }],
+        });
+      });
+    </script>
+    <script>
+      $(document).ready(function () {
+        $('#your_completed_tasks').DataTable({
+          searching: true,
+          columns: [
+            { orderable: true, searchable: true },
+            { orderable: true, searchable: false },
+            { orderable: true, searchable: false },
+            { orderable: true, searchable: false },
+            { orderable: false, searchable: false }],
+        });
+      });
+    </script>
+    <script>
+      $(document).ready(function () {
+        $('#community_uncompleted_tasks').DataTable({
+          searching: true,
+          columns: [
+            { orderable: true, searchable: true },
+            { orderable: true, searchable: false },
+            { orderable: true, searchable: true },
+            { orderable: false, searchable: false }],
+        });
+      });
+    </script>
+    <script>
+      $(document).ready(function () {
+        $('#community_completed_tasks').DataTable({
+          searching: true,
+          columns: [
+            { orderable: true, searchable: true },
+            { orderable: true, searchable: false },
+            { orderable: true, searchable: true },
+            { orderable: true, searchable: false },
+            { orderable: false, searchable: false }],
+        });
+      });
+    </script>
+  {% endblock %}
+</body>
+</html>
