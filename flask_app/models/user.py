@@ -34,7 +34,7 @@ class User:
     
     query = "INSERT INTO users (username, email, password) VALUES (%(username)s, %(email)s, %(password)s);"
     
-    result = connectToMySQL('tfc_test_project').query_db(query, data)
+    result = connectToMySQL('task_manager').query_db(query, data)
     
     return result
   
@@ -51,7 +51,7 @@ class User:
     
     query = "SELECT * FROM users WHERE email = %(email)s;"
     
-    results = connectToMySQL('tfc_test_project').query_db(query, data)
+    results = connectToMySQL('task_manager').query_db(query, data)
     
     users = []
 
@@ -73,7 +73,7 @@ class User:
     
     query = "SELECT * FROM users WHERE username = %(username)s;"
     
-    results = connectToMySQL('tfc_test_project').query_db(query, data)
+    results = connectToMySQL('task_manager').query_db(query, data)
     
     print(results)
     

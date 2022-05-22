@@ -22,7 +22,7 @@ class Task:
   def add_task(cls, data):
     query = "INSERT INTO tasks (task_name, description, due_date, privacy_status, completion_status, user_id) VALUES (%(task_name)s, %(description)s, %(due_date)s, %(privacy_status)s, %(completion_status)s, %(user_id)s);"
 
-    result = connectToMySQL('tfc_test_project').query_db(query, data)
+    result = connectToMySQL('task_manager').query_db(query, data)
 
     return result
 
@@ -30,7 +30,7 @@ class Task:
   def get_all_tasks(cls):
     query = 'SELECT * FROM tasks JOIN users ON tasks.user_id = users.id;'
 
-    results = connectToMySQL('tfc_test_project').query_db(query)
+    results = connectToMySQL('task_manager').query_db(query)
 
     tasks = []
 
@@ -53,7 +53,7 @@ class Task:
   def get_all_tasks_from_user(cls, data):
     query = 'SELECT * FROM tasks WHERE tasks.user_id = %(user_id)s;'
 
-    results = connectToMySQL('tfc_test_project').query_db(query, data)
+    results = connectToMySQL('task_manager').query_db(query, data)
 
     tasks = []
 
@@ -76,7 +76,7 @@ class Task:
   def get_task_by_id(cls, data):
     query = "SELECT * FROM tasks JOIN users ON tasks.user_id = users.id WHERE tasks.id = %(id)s;"
 
-    result = connectToMySQL('tfc_test_project').query_db(query, data)
+    result = connectToMySQL('task_manager').query_db(query, data)
 
     task = cls(result[0])
     user_data = {
@@ -95,13 +95,13 @@ class Task:
   def update_task(cls, data):
     query = 'UPDATE tasks SET task_name = %(task_name)s, description = %(description)s, due_date = %(due_date)s , privacy_status = %(privacy_status)s, completion_status = %(completion_status)s, completion_date = %(completion_date)s WHERE id = %(id)s;'
 
-    connectToMySQL('tfc_test_project').query_db(query, data)
+    connectToMySQL('task_manager').query_db(query, data)
 
   @classmethod
   def delete_task(cls, data):
     query = 'DELETE FROM tasks WHERE id = %(id)s;'
 
-    connectToMySQL('tfc_test_project').query_db(query, data)
+    connectToMySQL('task_manager').query_db(query, data)
 
   @staticmethod
   def validate_task(data):
